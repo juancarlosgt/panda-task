@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import AppSidebar from './AppSidebar.vue'
+import AppSidebar from './AppSideBar.vue'
 import AppHeader from './AppHeader.vue'
 
 export default {
