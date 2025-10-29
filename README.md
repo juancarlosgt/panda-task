@@ -93,8 +93,8 @@ La aplicación está optimizada para:
 
 ## 🚧 Próximas Características
 
-- [ ] **Drag & Drop** de tareas entre columnas
-- [ ] **Edición en línea** de tareas y columnas
+- [X] ~~**Drag & Drop** de tareas entre columnas~~
+- [X] ~~**Edición en línea** de tareas y columnas~~
 - [ ] **Fechas de vencimiento** y recordatorios
 - [ ] **Etiquetas y categorías** para tareas
 - [ ] **Búsqueda y filtros** avanzados

@@ -168,11 +168,24 @@ export const useProjectsStore = defineStore('projects', {
         const updatedTask = await projectsService.updateTask(projectId, columnId, taskId, taskData)
 
         if (this.currentProject && this.currentProject.id === projectId) {
-          const column = this.currentProject.columns.find(col => col.id === columnId)
-          if (column) {
-            const taskIndex = column.tasks.findIndex(task => task.id === taskId)
-            if (taskIndex !== -1) {
-              column.tasks[taskIndex] = updatedTask
+          if (taskData.new_column_id && taskData.new_column_id !== columnId) {
+            const sourceColumn = this.currentProject.columns.find(col => col.id === columnId)
+            if (sourceColumn) {
+              sourceColumn.tasks = sourceColumn.tasks.filter(task => task.id !== taskId)
+            }
+
+            const targetColumn = this.currentProject.columns.find(col => col.id === taskData.new_column_id)
+            if (targetColumn) {
+              targetColumn.tasks.push(updatedTask)
+            }
+          } else {
+
+            const column = this.currentProject.columns.find(col => col.id === columnId)
+            if (column) {
+              const taskIndex = column.tasks.findIndex(task => task.id === taskId)
+              if (taskIndex !== -1) {
+                column.tasks[taskIndex] = updatedTask
+              }
             }
           }
         }

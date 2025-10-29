@@ -9,10 +9,14 @@
         <!-- Board de Columnas -->
         <div class="flex space-x-6 overflow-x-auto pb-6">
             <!-- Columnas existentes -->
-            <div v-for="column in getColumns()" :key="column.id" class="flex-shrink-0 w-80 bg-gray-50 rounded-lg p-4">
+            <div v-for="column in getColumns()" :key="column.id"
+                class="flex-shrink-0 w-80 bg-gray-50 rounded-lg p-4 transition-colors duration-200"
+                :class="{ 'drag-over': draggedTask && sourceColumn?.id !== column.id }" @dragover="onDragOver"
+                @drop="onDrop(column, projectId)">
                 <!-- Header de Columna -->
                 <div class="flex items-center justify-between mb-4 group">
-                    <h3 class="font-semibold text-gray-800 truncate overflow-hidden whitespace-nowrap">{{ column.title }}</h3>
+                    <h3 class="font-semibold text-gray-800 truncate overflow-hidden whitespace-nowrap">{{ column.title
+                    }}</h3>
                     <div class="flex items-center space-x-2">
                         <span class="text-sm text-gray-500 bg-white px-2 py-1 rounded">
                             {{ getTaskCount(column) }}
@@ -28,30 +32,37 @@
                 </div>
 
                 <!-- Lista de Tareas -->
-                <div v-for="task in getTasks(column)" :key="task.id"
-                    class="bg-white m-2 p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1  w-full" @click="openTaskModal(task)">
-                            <h4 class="font-medium text-gray-900 mb-2 truncate overflow-hidden whitespace-nowrap">{{ task.title }}</h4>
-                            <p v-if="task.description" class="text-sm text-gray-600 mb-3 truncate overflow-hidden whitespace-nowrap">
-                                {{ task.description }}
-                            </p>
-                            <div class="flex items-center justify-between text-xs text-gray-500">
-                                <span>+2d...</span>
+                <div class="space-y-3 min-h-20" @dragover="onDragOver">
+                    <div v-for="task in getTasks(column)" :key="task.id" draggable="true"
+                        @dragstart="onDragStart(task, column)" @dragend="draggedTask = null"
+                        class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
+                        :class="{ 'opacity-50': draggedTask?.id === task.id }">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1  w-full" @click="openTaskModal(task)">
+                                <h4 class="font-medium text-gray-900 mb-2 truncate overflow-hidden whitespace-nowrap">
+                                    {{ task.title }}</h4>
+                                <p v-if="task.description"
+                                    class="text-sm text-gray-600 mb-3 truncate overflow-hidden whitespace-nowrap">
+                                    {{ task.description }}
+                                </p>
+                                <div class="flex items-center justify-between text-xs text-gray-500">
+                                    <span>+2d...</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Menú de 3 puntos para tarea -->
-                        <button @click.stop="openTaskMenu(task, column, $event)"
-                            class="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 flex-shrink-0">
-                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                            </svg>
-                        </button>
+                            <!-- Menú de 3 puntos para tarea -->
+                            <button @click.stop="openTaskMenu(task, column, $event)"
+                                class="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-
+                
                 <!-- Botón para agregar tarea -->
                 <button @click="openCreateTaskModal(column)"
                     class="w-full mt-3 p-2 text-gray-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
@@ -287,6 +298,7 @@
 
 <script>
 import { useProjectsStore } from '../../stores/projects'
+import { useDragAndDrop } from '../../composables/useDragAndDrop'
 
 export default {
     name: 'ProjectBoard',
@@ -328,7 +340,22 @@ export default {
     },
     setup() {
         const projectsStore = useProjectsStore()
-        return { projectsStore }
+        const {
+            draggedTask,
+            sourceColumn,
+            onDragStart,
+            onDragOver,
+            onDrop
+        } = useDragAndDrop()
+
+        return {
+            projectsStore,
+            draggedTask,
+            sourceColumn,
+            onDragStart,
+            onDragOver,
+            onDrop
+        }
     },
     computed: {
         project() {
@@ -419,7 +446,7 @@ export default {
             this.columnMenuPosition = {
                 top: `${event.clientY}px`,
                 left: `${event.clientX}px`
-            }            
+            }
             this.showColumnMenu = true
         },
 
@@ -592,3 +619,15 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.drag-over {
+    background-color: #f0f9ff;
+    border-color: #3b82f6;
+}
+
+.dragging {
+    cursor: grabbing;
+    transform: rotate(5deg);
+}
+</style>
