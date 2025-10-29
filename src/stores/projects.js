@@ -19,7 +19,7 @@ export const useProjectsStore = defineStore('projects', {
     async fetchProjects() {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const projects = await projectsService.getProjects()
         this.projects = projects
@@ -50,6 +50,9 @@ export const useProjectsStore = defineStore('projects', {
         if (index !== -1) {
           this.projects[index] = updatedProject
         }
+        if (this.currentProject && this.currentProject.id === projectId) {
+          this.currentProject = updatedProject
+        }
         return updatedProject
       } catch (error) {
         this.error = error.message
@@ -61,15 +64,18 @@ export const useProjectsStore = defineStore('projects', {
       try {
         await projectsService.deleteProject(projectId)
         this.projects = this.projects.filter(p => p.id !== projectId)
+        if (this.currentProject && this.currentProject.id === projectId) {
+          this.currentProject = null
+        }
       } catch (error) {
         this.error = error.message
         throw error
       }
     },
-async fetchProjectById(projectId) {
+    async fetchProjectById(projectId) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const project = await projectsService.getProjectById(projectId)
         this.currentProject = project
@@ -85,30 +91,56 @@ async fetchProjectById(projectId) {
     async createColumn(projectId, columnData) {
       try {
         const newColumn = await projectsService.createColumn(projectId, columnData)
-        
+
         // Actualizar el proyecto actual si es el mismo
         if (this.currentProject && this.currentProject.id === projectId) {
           this.currentProject.columns.push(newColumn)
         }
-        
+
         return newColumn
       } catch (error) {
         this.error = error.message
         throw error
       }
     },
+    async updateColumn(projectId, columnId, columnData) {
+      try {
+        const updatedColumn = await projectsService.updateColumn(projectId, columnId, columnData)
+        if (this.currentProject && this.currentProject.id === projectId) {
+          const columnIndex = this.currentProject.columns.findIndex(col => col.id === columnId)
+          if (columnIndex !== -1) {
+            this.currentProject.columns[columnIndex] = updatedColumn
+          }
+        }
+        return updatedColumn
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
 
+    async deleteColumn(projectId, columnId) {
+      try {
+        await projectsService.deleteColumn(projectId, columnId)
+        if (this.currentProject && this.currentProject.id === projectId) {
+          this.currentProject.columns = this.currentProject.columns.filter(col => col.id !== columnId)
+        }
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
     async createTask(projectId, columnId, taskData) {
       try {
         const newTask = await projectsService.createTask(projectId, columnId, taskData)
-        
+
         if (this.currentProject && this.currentProject.id === projectId) {
           const column = this.currentProject.columns.find(col => col.id === columnId)
           if (column) {
             column.tasks.push(newTask)
           }
         }
-        
+
         return newTask
       } catch (error) {
         this.error = error.message
@@ -119,7 +151,7 @@ async fetchProjectById(projectId) {
     async updateTask(projectId, columnId, taskId, taskData) {
       try {
         const updatedTask = await projectsService.updateTask(projectId, columnId, taskId, taskData)
-        
+
         if (this.currentProject && this.currentProject.id === projectId) {
           const column = this.currentProject.columns.find(col => col.id === columnId)
           if (column) {
@@ -129,7 +161,7 @@ async fetchProjectById(projectId) {
             }
           }
         }
-        
+
         return updatedTask
       } catch (error) {
         this.error = error.message
@@ -140,7 +172,7 @@ async fetchProjectById(projectId) {
     async deleteTask(projectId, columnId, taskId) {
       try {
         await projectsService.deleteTask(projectId, columnId, taskId)
-        
+
         if (this.currentProject && this.currentProject.id === projectId) {
           const column = this.currentProject.columns.find(col => col.id === columnId)
           if (column) {

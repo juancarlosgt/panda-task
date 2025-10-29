@@ -54,6 +54,23 @@ export const projectsService = {
       throw new Error(error.response?.data?.message || 'Error al crear columna')
     }
   },
+  async updateColumn(projectId, columnId, columnData) {
+    try {
+      const response = await api.put(`/projects/${projectId}/columns/${columnId}`, columnData)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Error al actualizar columna')
+    }
+  },
+
+  async deleteColumn(projectId, columnId) {
+    try {
+      const response = await api.delete(`/projects/${projectId}/columns/${columnId}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Error al eliminar columna')
+    }
+  },
 
   async createTask(projectId, columnId, taskData) {
     try {
