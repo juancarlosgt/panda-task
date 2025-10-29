@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { authService } from '../services/auth.js'
 import { jwtDecode } from 'jwt-decode'
+import { useProjectsStore } from './projects'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -19,16 +20,15 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const data = await authService.login(credentials)
-        this.token = data.token
+        this.token = data.access_token
         this.user = data.user
-        
-        // Guardar en localStorage
-        localStorage.setItem('authToken', data.token)
+
+
+        localStorage.setItem('authToken', data.access_token)
         localStorage.setItem('userData', JSON.stringify(data.user))
-        
         return data
       } catch (error) {
         this.error = error.message
@@ -41,16 +41,15 @@ export const useAuthStore = defineStore('auth', {
     async register(userData) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const data = await authService.register(userData)
         this.token = data.token
         this.user = data.user
-        
-        // Guardar en localStorage
+
         localStorage.setItem('authToken', data.token)
         localStorage.setItem('userData', JSON.stringify(data.user))
-        
+
         return data
       } catch (error) {
         this.error = error.message
@@ -69,21 +68,21 @@ export const useAuthStore = defineStore('auth', {
     initializeAuth() {
       const token = localStorage.getItem('authToken')
       const userData = localStorage.getItem('userData')
-      
+
       if (token && userData) {
-        // Verificar si el token no ha expirado
         try {
           const decodedToken = jwtDecode(token)
           const currentTime = Date.now() / 1000
-          
+
           if (decodedToken.exp < currentTime) {
-            // Token expirado
             this.logout()
             return
           }
-          
+
           this.token = token
           this.user = JSON.parse(userData)
+          const projectsStore = useProjectsStore()
+          projectsStore.fetchProjects()
         } catch (error) {
           console.error('Error decoding token:', error)
           this.logout()

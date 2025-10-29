@@ -16,10 +16,16 @@
         
         <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
           <router-link 
-            to="/login"
+            v-if="!isAuthenticated" to="/login"
             class="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 transition-transform transform hover:scale-110 duration-300"
           >
             Comenzar Ahora
+          </router-link>
+          <router-link 
+            v-else to="/dashboard"
+            class="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 transition-transform transform hover:scale-110 duration-300"
+          >
+            Ir al Dashboard
           </router-link>
         </div>
       </div>
@@ -56,11 +62,20 @@
 
 <script>
 import Header from '../components/Header.vue'
-
+import { useAuthStore } from '../stores/auth'
 export default {
   name: 'HomeView',
   components: {
     Header
+  },
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
+  },
+  computed: {
+    isAuthenticated() {
+      return this.authStore.isAuthenticated
+    }
   }
 }
 </script>
