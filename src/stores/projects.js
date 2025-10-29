@@ -46,13 +46,24 @@ export const useProjectsStore = defineStore('projects', {
     async updateProject(projectId, projectData) {
       try {
         const updatedProject = await projectsService.updateProject(projectId, projectData)
+
+        if (this.currentProject && this.currentProject.id === projectId) {
+          const existingColumns = this.currentProject.columns || []
+          this.currentProject = {
+            ...updatedProject,
+            columns: Array.isArray(updatedProject.columns) ? updatedProject.columns : existingColumns
+          }
+        }
+
         const index = this.projects.findIndex(p => p.id === projectId)
         if (index !== -1) {
-          this.projects[index] = updatedProject
+          const existingColumnsInList = this.projects[index].columns || []
+          this.projects[index] = {
+            ...updatedProject,
+            columns: Array.isArray(updatedProject.columns) ? updatedProject.columns : existingColumnsInList
+          }
         }
-        if (this.currentProject && this.currentProject.id === projectId) {
-          this.currentProject = updatedProject
-        }
+
         return updatedProject
       } catch (error) {
         this.error = error.message
@@ -109,7 +120,11 @@ export const useProjectsStore = defineStore('projects', {
         if (this.currentProject && this.currentProject.id === projectId) {
           const columnIndex = this.currentProject.columns.findIndex(col => col.id === columnId)
           if (columnIndex !== -1) {
-            this.currentProject.columns[columnIndex] = updatedColumn
+            const existingTasks = this.currentProject.columns[columnIndex].tasks || []
+            this.currentProject.columns[columnIndex] = {
+              ...updatedColumn,
+              tasks: updatedColumn.tasks || existingTasks
+            }
           }
         }
         return updatedColumn

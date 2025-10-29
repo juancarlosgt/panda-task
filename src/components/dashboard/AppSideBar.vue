@@ -44,8 +44,8 @@
                         <div v-for="project in projects" :key="project.id" @click="selectProject(project)"
                             class="flex items-center justify-between p-2 text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors duration-200 group"
                             :class="{ 'bg-gray-100': currentProject?.id === project.id }">
-                            <div class="flex items-center">
-                                <span class="ml-2 text-xs text-gray-500 truncate">{{ project.name }}</span>
+                            <div class="flex items-center truncate overflow-hidden whitespace-nowrap">
+                                <span class="ml-2 text-xs text-gray-500 truncate overflow-hidden whitespace-nowrap">{{ project.name }}</span>
                             </div>
 
                             <!-- Menú de 3 puntos (solo visible al hacer hover) -->
