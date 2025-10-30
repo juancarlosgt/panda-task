@@ -48,7 +48,7 @@ Una aplicación moderna de gestión de tareas y proyectos construida con Vue.js 
    
    Editar `.env`:
    ```env
-   VITE_API_BASE_URL=http://localhost:3000/api
+   VITE_API_BASE_URL=http://localhost:8000/api
    ```
 
 4. **Ejecutar en desarrollo**
